@@ -3,6 +3,12 @@ import { Client } from './client';
 export { audioQuery } from './audio_query';
 export { Client } from './client';
 export {
+  type AudioQueryDurationEstimate,
+  estimateAudioQueryDuration,
+  estimateSpeechDuration,
+  type SpeechDurationEstimate,
+} from './duration-estimate';
+export {
   HttpError,
   RequestValidationError,
   ResponseParseError,

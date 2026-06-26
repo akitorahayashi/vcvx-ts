@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "description": "Duration test cases for VOICEVOX speech timing measurement.",
+  "speakerId": 2,
+  "profile": {
+    "baselineSpeedScale": 1.15,
+    "speedScales": [0.8, 1, 1.15, 1.3, 1.5],
+    "pitchScale": 0,
+    "intonationScale": 1,
+    "volumeScale": 1,
+    "prePhonemeLength": 0,
+    "postPhonemeLength": 0
+  },
+  "cases": [
+    {
+      "id": "plain-short",
+      "description": "Short sentence without punctuation.",
+      "blocks": ["犬が走ります"]
+    },
+    {
+      "id": "plain-medium",
+      "description": "Medium sentence without punctuation.",
+      "blocks": ["今日は新しい動画を作ります"]
+    },
+    {
+      "id": "internal-comma",
+      "description": "Internal Japanese comma.",
+      "blocks": ["犬が走り、猫が止まります。"]
+    },
+    {
+      "id": "split-comma",
+      "description": "Same sentence split at the comma boundary.",
+      "blocks": ["犬が走り", "猫が止まります。"]
+    },
+    {
+      "id": "terminal-period-minimal",
+      "description": "Terminal period minimal pair.",
+      "blocks": ["できるのでしょうか。"]
+    },
+    {
+      "id": "no-terminal-period-minimal",
+      "description": "No terminal period minimal pair.",
+      "blocks": ["できるのでしょうか"]
+    },
+    {
+      "id": "question-and-exclamation",
+      "description": "Question and exclamation punctuation.",
+      "blocks": ["本当にできるのでしょうか？すごいですね！"]
+    },
+    {
+      "id": "quotes",
+      "description": "Japanese quotation marks.",
+      "blocks": ["彼は「これは便利です」と言いました。"]
+    },
+    {
+      "id": "parentheses",
+      "description": "Japanese parentheses.",
+      "blocks": ["次の機能（音声の推定）を確認します。"]
+    },
+    {
+      "id": "small-tsu-and-n",
+      "description": "Small tsu and moraic n.",
+      "blocks": ["ちょっと待ってください。そんなはずはありません。"]
+    },
+    {
+      "id": "digits-and-counters",
+      "description": "Digits, counters, and mixed notation.",
+      "blocks": ["2026年の第3回テストを5分で確認します。"]
+    },
+    {
+      "id": "long-vowel",
+      "description": "Long vowel mark changes pronunciation.",
+      "blocks": ["カレーとコーヒーを買いました。"]
+    },
+    {
+      "id": "project-like-narration",
+      "description": "Production-like narration sentence.",
+      "blocks": [
+        "この場面では、短い説明を自然な速度で読み上げ、映像の切り替わりに合わせて余白を残します。"
+      ]
+    }
+  ]
+}
