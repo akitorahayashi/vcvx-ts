@@ -126,7 +126,16 @@ function parseArgs(args: string[]): {
 
 async function fetchOpenApi(engineUrl: string): Promise<OpenApiDocument> {
   const url = new URL('/openapi.json', normalizeBaseUrl(engineUrl));
-  const response = await fetch(url);
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (error: unknown) {
+    const details = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to connect to VOICEVOX Engine at ${url.origin}. Start the engine with "bun run serve" or pass --engine-url.\nDetails: ${details}`,
+    );
+  }
+
   if (!response.ok) {
     throw new Error(`Failed to fetch OpenAPI document: ${response.status}`);
   }
@@ -140,7 +149,8 @@ async function fetchOpenApi(engineUrl: string): Promise<OpenApiDocument> {
 }
 
 function normalizeBaseUrl(value: string): URL {
-  const url = new URL(value);
+  const input = /^https?:\/\//iu.test(value) ? value : `http://${value}`;
+  const url = new URL(input);
   url.pathname = url.pathname.replace(/\/+$/u, '');
   return url;
 }
@@ -291,7 +301,7 @@ function schemaLabel(schema: SchemaObject | undefined): string {
     return schema.allOf.map(schemaLabel).join(' & ');
   }
   if (schema.type === 'array') {
-    return `${schemaLabel(schema.items)}[]`;
+    return `${schema.items === undefined ? 'unknown' : schemaLabel(schema.items)}[]`;
   }
   if (schema.enum !== undefined) {
     return schema.enum.map((value) => String(value)).join(' | ');
@@ -343,4 +353,9 @@ function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-await main();
+function reportError(error: unknown): never {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
+
+await main().catch(reportError);
