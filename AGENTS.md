@@ -5,41 +5,50 @@
 ```text
 src/
   index.ts            Public export boundary
-  client.ts           Public API client facade
-  transport.ts        Fetch-based HTTP boundary
-  errors.ts           Client, HTTP, and response parse errors
+  client.ts           User-facing VOICEVOX client
+  rest.ts             HTTP request and response boundary
+  audio_query.ts      Mutable audio query object with synthesis
+  speaker.ts          Speaker response wrapper
+  preset.ts           Preset response wrapper
+  errors.ts           Client and protocol errors
   types/
-    <resource>.ts     API request and response DTOs
+    *.ts              VOICEVOX request and response payload types
 tests/
-  client.test.ts      Public client behavior tests
-  transport.test.ts   HTTP boundary behavior tests
+  client.test.ts      Public client behavior
+  rest.test.ts        HTTP and parsing behavior
 ```
 
 ## Architecture
 
+### Compatibility Target
+
+The repository targets VOICEVOX Engine `0.25.2` first. Compatibility work is
+measured against the endpoints and payload shapes needed by `avs`.
+
 ### Public API
 
-`src/index.ts` owns the package export surface. Public functions, classes, and types are re-exported from this file. Internal modules are not imported directly by consumers.
+`src/index.ts` owns the package export surface. Package consumers import from
+the package root rather than from nested source files.
 
 ### Client
 
-`client.ts` owns the user-facing API client class. The client maps high-level methods to typed transport requests and returns typed response models.
+`client.ts` owns high-level VOICEVOX operations. The client exposes speaker
+discovery, speaker validation, audio query creation, and synthesis flows.
 
-### Transport
+### REST Boundary
 
-`transport.ts` owns URL construction, query serialization, JSON request bodies, response parsing, and HTTP failure handling. HTTP failures and response parse failures are explicit errors.
+`rest.ts` owns URL construction, query serialization, JSON request bodies,
+binary response handling, and explicit HTTP or parse failures.
 
-### Types
+### Query Model
 
-`src/types/` owns API request and response DTOs. DTO files are named by resource or endpoint family, not by generic labels.
-
-### Errors
-
-`errors.ts` exports `ClientError` as the shared client error base. `HttpError` represents non-2xx HTTP responses, and `ResponseParseError` represents invalid or unexpected response bodies.
+`audio_query.ts` owns the mutable VOICEVOX audio query object returned by
+`/audio_query` and `/audio_query_from_preset`.
 
 ## Development Commands
 
 ```sh
+bun run serve    # Start VOICEVOX Engine 0.25.2 in Docker
 bun run fix      # Biome autofix
 bun run check    # Biome lint + tsc --noEmit
 bun test         # Run all tests
@@ -47,13 +56,7 @@ bun test         # Run all tests
 
 ## Development Guidelines
 
-- `bun run fix` runs before `bun run check`.
 - Tests assert public behavior through exports from `src/index.ts`.
-- Client tests use injected fetch implementations or local test servers. External service availability is not required.
-- New client methods include tests at the package boundary.
-- Package consumers import from the package root, not from nested source files.
-- The package is consumed as Bun-readable TypeScript from GitHub URL dependencies. No `dist/` build output is required.
-
-## Documentation Rules
-
-Documentation is written in a declarative style describing the current state of the system. Imperative or changelog-style descriptions are not used.
+- HTTP behavior is verified with local test servers rather than external engine
+  availability.
+- Documentation describes the current public boundary and compatibility target.
