@@ -81,6 +81,20 @@ the repository directly from a GitHub URL dependency.
   `ResponseValidationError`, and `RequestValidationError` surface client and
   protocol failures explicitly.
 
+## Documentation
+
+- `docs/api-reference.md` is generated from the running engine's
+  `/openapi.json`.
+- `docs/audio-duration-estimation.md` documents how `audio_query` output is
+  used to estimate speech duration.
+
+Regenerate the engine API reference after changing the target VOICEVOX Engine
+version.
+
+```sh
+bun run docs:api
+```
+
 ## Development
 
 ```sh
