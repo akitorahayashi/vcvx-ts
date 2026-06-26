@@ -1,21 +1,41 @@
-export { ExampleClient, type ExampleClientOptions } from './client';
+import { Client } from './client';
+
+export { audioQuery } from './audio_query';
+export { Client } from './client';
 export {
-  ClientConfigurationError,
-  ClientError,
   HttpError,
+  RequestValidationError,
   ResponseParseError,
+  ResponseValidationError,
+  VoicevoxError,
 } from './errors';
-export {
-  type FetchLike,
-  type HeaderSource,
-  type HttpMethod,
-  type HttpRequest,
-  HttpTransport,
-  type HttpTransportOptions,
-  type QueryValue,
-} from './transport';
+export { Preset } from './preset';
+export { type FetchLike, RestAPI } from './rest';
+export { Speaker } from './speaker';
+export { synthesizeWav } from './synthesis';
 export type {
-  CreateResourceRequest,
-  ListResourcesResponse,
-  Resource,
-} from './types/resource';
+  accentPhrase as AccentPhrase,
+  audioQuery as AudioQueryData,
+  audioQueryOverrides as AudioQueryOverrides,
+  createAudioQueryFromPresetOptions as CreateAudioQueryFromPresetOptions,
+  createAudioQueryOptions as CreateAudioQueryOptions,
+} from './types/audioquery';
+export {
+  parseAudioQuery,
+  parseAudioQueryOverrides,
+} from './types/audioquery';
+export type { Preset as PresetData } from './types/preset';
+export type {
+  Speaker as SpeakerData,
+  Styles as SpeakerStyle,
+  SupportedFeatures as SpeakerSupportedFeatures,
+} from './types/speaker';
+export { parseSpeakers } from './types/speaker';
+export type { synthesisParams as SynthesisOptions } from './types/synthesis';
+export {
+  parseVoicevoxProfile,
+  type VoicevoxProfile,
+  voicevoxProfileSchema,
+} from './voicevox-profile';
+
+export default Client;

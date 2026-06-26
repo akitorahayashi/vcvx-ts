@@ -4,18 +4,18 @@
 
 This repository owns:
 
-- `src/` — public exports, API client facade, HTTP transport, DTOs, and client errors
-- `tests/` — package and HTTP boundary behavior tests
+- `src/` — the VOICEVOX client, REST boundary, query model, profile contract,
+  wrappers, payload types, and runtime API validation
+- `tests/` — public client and HTTP behavior tests
 - `.github/workflows/` — CI automation
 
 ## Workflow
 
-1. Run `bun run fix` before committing.
-2. Run `bun run check` to verify lint and types.
-3. Run `bun test` to verify behavior.
+1. Run `bun run fix`.
+2. Run `bun run check`.
+3. Run `bun test`.
 
-See [AGENTS.md](AGENTS.md) for development commands, architecture, and implementation rules.
+## Runtime
 
-## Runtime Version
-
-The Bun version is fixed by the `packageManager` field in `package.json`. Local development and CI use the same version.
+The Bun version is fixed by the `packageManager` field in `package.json`. The
+default local engine target is VOICEVOX Engine `0.25.2` through `bun run serve`.
