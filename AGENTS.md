@@ -23,6 +23,12 @@ tests/
   types/
     audioquery.test.ts      Tests for src/types/audioquery.ts
     speaker.test.ts         Tests for src/types/speaker.ts
+scripts/
+  generate-api-reference.ts Generate docs/api-reference.md from OpenAPI
+docs/
+  api-reference.md          Generated VOICEVOX Engine HTTP API reference
+  audio-duration-estimation.md
+                            Duration estimation notes based on audio_query
 ```
 
 ## Architecture
@@ -65,10 +71,17 @@ map to `tests/types/` with the same basename.
 `audio_query.ts` owns the mutable VOICEVOX audio query object returned by
 `/audio_query` and `/audio_query_from_preset`.
 
+### Documentation
+
+`docs/api-reference.md` is generated from the running VOICEVOX Engine
+`/openapi.json` by `scripts/generate-api-reference.ts`. Manual edits belong in
+the generator or in non-generated documentation.
+
 ## Development Commands
 
 ```sh
 bun run serve    # Start VOICEVOX Engine 0.25.2 in Docker
+bun run docs:api # Regenerate docs/api-reference.md from /openapi.json
 bun run fix      # Biome autofix
 bun run check    # Biome lint + tsc --noEmit
 bun test         # Run all tests
