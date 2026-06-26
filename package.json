@@ -23,8 +23,7 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "check": "biome check . && bun run typecheck",
-    "fix": "biome check --write .",
-    "prepare": "husky"
+    "fix": "biome check --write ."
   },
   "dependencies": {
     "zod": "4.4.3"
@@ -32,7 +31,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@types/bun": "1.3.14",
-    "husky": "9.1.7",
     "typescript": "6.0.3"
   }
 }
