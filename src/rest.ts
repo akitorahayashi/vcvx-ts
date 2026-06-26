@@ -1,11 +1,7 @@
 import { HttpError, ResponseParseError, VoicevoxError } from './errors';
-import type {
-  audioQuery,
-  createAudioQueryFromPresetOptions,
-  createAudioQueryOptions,
-} from './types/audioquery';
+import type { audioQuery } from './types/audioquery';
 import { parseAudioQuery } from './types/audioquery';
-import type { DeletePresetOptions, Preset } from './types/preset';
+import type { Preset } from './types/preset';
 import type { Speaker } from './types/speaker';
 import { parseSpeakers } from './types/speaker';
 import type { synthesisParams } from './types/synthesis';
@@ -52,14 +48,12 @@ export class RestAPI {
     path: string,
     options?: {
       body?: unknown;
-      params?: object;
+      params?: Record<string, unknown>;
     },
   ): Promise<T> {
-    const url = new URL(`${this.engine_url}${path}`);
+    const url = new URL(path.replace(/^\/+/u, ''), `${this.engine_url}/`);
     if (options?.params !== undefined) {
-      for (const [key, value] of Object.entries(
-        options.params as Record<string, unknown>,
-      )) {
+      for (const [key, value] of Object.entries(options.params)) {
         if (value !== undefined) {
           url.searchParams.set(key, String(value));
         }
@@ -76,7 +70,14 @@ export class RestAPI {
       fetch_options.body = JSON.stringify(options.body);
     }
 
-    const response = await this.fetch(url, fetch_options);
+    let response: Response;
+    try {
+      response = await this.fetch(url, fetch_options);
+    } catch (error: unknown) {
+      throw new VoicevoxError('VOICEVOX connection or network failure', {
+        cause: error,
+      });
+    }
     if (!response.ok) {
       throw new HttpError({
         body: await response.text(),
@@ -114,7 +115,7 @@ export class RestAPI {
       core_version?: string;
     },
   ): Promise<audioQuery> {
-    const params: createAudioQueryOptions = {
+    const params: Record<string, unknown> = {
       text: text,
       speaker: speaker,
     };
@@ -136,7 +137,7 @@ export class RestAPI {
       core_version?: string;
     },
   ): Promise<audioQuery> {
-    const params: createAudioQueryFromPresetOptions = {
+    const params: Record<string, unknown> = {
       text: text,
       preset_id: preset_id,
     };
@@ -157,7 +158,7 @@ export class RestAPI {
   ): Promise<ArrayBuffer> {
     return await this.request<ArrayBuffer>('POST', '/synthesis', {
       body: audioQuery,
-      params: params,
+      params: { ...params },
     });
   }
 
@@ -178,7 +179,7 @@ export class RestAPI {
   }
 
   async deletePreset(id: number): Promise<void> {
-    const params: DeletePresetOptions = {
+    const params: Record<string, unknown> = {
       id: id,
     };
     await this.request<void>('POST', '/delete_preset', {

@@ -8,6 +8,7 @@ import type { synthesisParams } from './types/synthesis';
 // audio query
 export class audioQuery {
   private rest: RestAPI;
+  private readonly queryFields: Omit<audioQueryT, 'accent_phrases'>;
   public speedScale: number;
   public pitchScale: number;
   public accentPhrases: accentPhrase[];
@@ -20,8 +21,10 @@ export class audioQuery {
   public kana: string;
 
   constructor(rest: RestAPI, audioQuery: audioQueryT) {
+    const { accent_phrases, ...queryFields } = audioQuery;
     this.rest = rest;
-    this.accentPhrases = audioQuery.accent_phrases;
+    this.queryFields = queryFields;
+    this.accentPhrases = accent_phrases;
     this.speedScale = audioQuery.speedScale;
     this.pitchScale = audioQuery.pitchScale;
     this.intonationScale = audioQuery.intonationScale;
@@ -60,6 +63,7 @@ export class audioQuery {
       params.core_version = options.core_version;
     }
     const query: audioQueryT = {
+      ...this.queryFields,
       accent_phrases: this.accentPhrases,
       intonationScale: this.intonationScale,
       kana: this.kana,

@@ -31,6 +31,44 @@ describe('RestAPI', () => {
     }
   });
 
+  test('builds URLs from paths with or without a leading slash', async () => {
+    const urls: string[] = [];
+    const rest = new RestAPI('https://api.example.test', {
+      fetch: async (input) => {
+        urls.push(String(input));
+
+        return Response.json({ ok: true });
+      },
+    });
+
+    await expect(
+      rest.request<{ ok: boolean }>('GET', 'json', {
+        params: { speaker: 13 },
+      }),
+    ).resolves.toEqual({ ok: true });
+    await expect(
+      rest.request<{ ok: boolean }>('GET', '/json'),
+    ).resolves.toEqual({ ok: true });
+
+    expect(urls).toEqual([
+      'https://api.example.test/json?speaker=13',
+      'https://api.example.test/json',
+    ]);
+  });
+
+  test('wraps fetch failures in a voicevox error', async () => {
+    const rest = new RestAPI('https://api.example.test', {
+      fetch: async () => {
+        throw new TypeError('network down');
+      },
+    });
+
+    await expect(rest.getSpeakers()).rejects.toThrow(VoicevoxError);
+    await expect(rest.getSpeakers()).rejects.toThrow(
+      'VOICEVOX connection or network failure',
+    );
+  });
+
   test('returns binary responses for synthesis', async () => {
     const server = Bun.serve({
       hostname: '127.0.0.1',

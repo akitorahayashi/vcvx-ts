@@ -32,6 +32,7 @@ describe('Client', () => {
             postPhonemeLength: 0.1,
             outputSamplingRate: 24000,
             outputStereo: false,
+            engine_extension: { kept: true },
             kana: 'テスト',
           });
         }
@@ -88,6 +89,7 @@ describe('Client', () => {
         postPhonemeLength: 0.1,
         outputSamplingRate: 24000,
         outputStereo: false,
+        engine_extension: { kept: true },
         kana: 'テスト',
       });
     } finally {

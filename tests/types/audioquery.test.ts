@@ -20,11 +20,13 @@ describe('audioquery types', () => {
           postPhonemeLength: 0.1,
           outputSamplingRate: 24000,
           outputStereo: false,
+          engine_extension: { kept: true },
           kana: 'テスト',
         },
         '/audio_query',
       ),
     ).toMatchObject({
+      engine_extension: { kept: true },
       speedScale: 1,
       kana: 'テスト',
     });
