@@ -26,6 +26,9 @@
     "fix": "biome check --write .",
     "prepare": "husky"
   },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@types/bun": "1.3.14",

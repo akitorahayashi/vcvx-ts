@@ -1,19 +1,52 @@
-export type StyleType = 'talk' | 'singing_teacher' | 'frame_decode' | 'sing';
+import { z } from 'zod';
+import { ResponseValidationError } from '../errors';
 
-export interface Styles {
-  id: number;
-  name: string;
-  type: string;
-}
+export const styleTypeSchema = z.enum([
+  'talk',
+  'singing_teacher',
+  'frame_decode',
+  'sing',
+]);
 
-export interface SupportedFeatures {
-  permitted_synthesis_morphing: 'ALL' | 'SELF_ONLY' | 'NOTHING';
-}
+export const speakerStyleSchema = z
+  .object({
+    id: z.number().int().nonnegative(),
+    name: z.string(),
+    type: styleTypeSchema.or(z.string()),
+  })
+  .passthrough();
 
-export interface Speaker {
-  name: string;
-  speaker_uuid: string;
-  styles: Styles[];
-  version: string;
-  supported_features: SupportedFeatures;
+export const speakerSupportedFeaturesSchema = z
+  .object({
+    permitted_synthesis_morphing: z.enum(['ALL', 'SELF_ONLY', 'NOTHING']),
+  })
+  .passthrough();
+
+export const speakerSchema = z
+  .object({
+    name: z.string(),
+    speaker_uuid: z.string(),
+    styles: z.array(speakerStyleSchema),
+    version: z.string(),
+    supported_features: speakerSupportedFeaturesSchema,
+  })
+  .passthrough();
+
+export const speakersSchema = z.array(speakerSchema);
+
+export type StyleType = z.infer<typeof styleTypeSchema>;
+export type Styles = z.infer<typeof speakerStyleSchema>;
+export type SupportedFeatures = z.infer<typeof speakerSupportedFeaturesSchema>;
+export type Speaker = z.infer<typeof speakerSchema>;
+
+export function parseSpeakers(value: unknown, path: string): Speaker[] {
+  const result = speakersSchema.safeParse(value);
+  if (!result.success) {
+    throw new ResponseValidationError({
+      message: z.prettifyError(result.error),
+      path,
+    });
+  }
+
+  return result.data;
 }

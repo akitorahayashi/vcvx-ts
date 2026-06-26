@@ -4,8 +4,8 @@
 
 This repository owns:
 
-- `src/` — the VOICEVOX client, REST boundary, query model, wrappers, and
-  payload types
+- `src/` — the VOICEVOX client, REST boundary, query model, profile contract,
+  wrappers, payload types, and runtime API validation
 - `tests/` — public client and HTTP behavior tests
 - `.github/workflows/` — CI automation
 

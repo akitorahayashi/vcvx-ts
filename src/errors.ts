@@ -49,3 +49,22 @@ export class ResponseParseError extends VoicevoxError {
     this.path = details.path;
   }
 }
+
+export class ResponseValidationError extends VoicevoxError {
+  readonly path: string;
+
+  constructor(details: { message: string; path: string }) {
+    super(
+      `VOICEVOX response is invalid for ${details.path}: ${details.message}`,
+    );
+    this.name = 'ResponseValidationError';
+    this.path = details.path;
+  }
+}
+
+export class RequestValidationError extends VoicevoxError {
+  constructor(message: string) {
+    super(`VOICEVOX request is invalid: ${message}`);
+    this.name = 'RequestValidationError';
+  }
+}

@@ -4,8 +4,10 @@ import type {
   createAudioQueryFromPresetOptions,
   createAudioQueryOptions,
 } from './types/audioquery';
+import { parseAudioQuery } from './types/audioquery';
 import type { DeletePresetOptions, Preset } from './types/preset';
 import type { Speaker } from './types/speaker';
+import { parseSpeakers } from './types/speaker';
 import type { synthesisParams } from './types/synthesis';
 
 export type FetchLike = (
@@ -22,12 +24,25 @@ export class RestAPI {
     engine_url: string,
     options?: { fetch?: FetchLike; timeout_ms?: number },
   ) {
-    const normalized = engine_url.trim().replace(/\/+$/u, '');
-    if (normalized.length === 0) {
+    const input = engine_url.trim();
+    if (input.length === 0) {
       throw new VoicevoxError('VOICEVOX engine URL must not be empty');
     }
 
-    this.engine_url = normalized;
+    let url: URL;
+    try {
+      url = new URL(input);
+    } catch (error: unknown) {
+      throw new VoicevoxError('VOICEVOX engine URL must be a valid URL', {
+        cause: error,
+      });
+    }
+
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new VoicevoxError('VOICEVOX engine URL must use HTTP or HTTPS');
+    }
+
+    this.engine_url = url.toString().replace(/\/+$/u, '');
     this.fetch = options?.fetch ?? fetch;
     this.timeout_ms = options?.timeout_ms ?? 30_000;
   }
@@ -106,9 +121,12 @@ export class RestAPI {
     if (options.core_version) {
       params.core_version = options.core_version;
     }
-    return await this.request<audioQuery>('POST', '/audio_query', {
-      params: params,
-    });
+    return parseAudioQuery(
+      await this.request<unknown>('POST', '/audio_query', {
+        params: params,
+      }),
+      '/audio_query',
+    );
   }
 
   async createAudioQueryFromPreset(
@@ -125,9 +143,12 @@ export class RestAPI {
     if (options.core_version) {
       params.core_version = options.core_version;
     }
-    return await this.request<audioQuery>('POST', '/audio_query_from_preset', {
-      params: params,
-    });
+    return parseAudioQuery(
+      await this.request<unknown>('POST', '/audio_query_from_preset', {
+        params: params,
+      }),
+      '/audio_query_from_preset',
+    );
   }
 
   async synthesis(
@@ -166,6 +187,9 @@ export class RestAPI {
   }
 
   async getSpeakers(): Promise<Speaker[]> {
-    return await this.request<Speaker[]>('GET', '/speakers');
+    return parseSpeakers(
+      await this.request<unknown>('GET', '/speakers'),
+      '/speakers',
+    );
   }
 }

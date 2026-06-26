@@ -10,9 +10,11 @@ src/
   audio_query.ts      Mutable audio query object with synthesis
   speaker.ts          Speaker response wrapper
   preset.ts           Preset response wrapper
+  synthesis.ts        Profile-based WAV synthesis helper
+  voicevox-profile.ts VOICEVOX synthesis profile contract
   errors.ts           Client and protocol errors
   types/
-    *.ts              VOICEVOX request and response payload types
+    *.ts              VOICEVOX payload types and endpoint response schemas
 tests/
   client.test.ts      Public client behavior
   rest.test.ts        HTTP and parsing behavior
@@ -40,6 +42,12 @@ discovery, speaker validation, audio query creation, and synthesis flows.
 `rest.ts` owns URL construction, query serialization, JSON request bodies,
 binary response handling, and explicit HTTP or parse failures.
 
+### Runtime Contracts
+
+Zod validates untrusted VOICEVOX responses and caller-provided synthesis
+profiles. Runtime validation is scoped to the VOICEVOX API contract. Caller
+formats, captions, output paths, and CLI modes are outside this package.
+
 ### Query Model
 
 `audio_query.ts` owns the mutable VOICEVOX audio query object returned by
@@ -59,4 +67,5 @@ bun test         # Run all tests
 - Tests assert public behavior through exports from `src/index.ts`.
 - HTTP behavior is verified with local test servers rather than external engine
   availability.
+- Runtime schemas cover VOICEVOX API payloads and profile/query inputs only.
 - Documentation describes the current public boundary and compatibility target.

@@ -3,7 +3,10 @@ import { VoicevoxError } from './errors';
 import { Preset } from './preset';
 import { RestAPI } from './rest';
 import { Speaker } from './speaker';
-import type { audioQuery as AudioQueryData } from './types/audioquery';
+import {
+  type audioQueryOverrides,
+  parseAudioQueryOverrides,
+} from './types/audioquery';
 
 // voicevox client
 /**
@@ -23,21 +26,6 @@ import type { audioQuery as AudioQueryData } from './types/audioquery';
  * main();
  * ```
  */
-type QueryOverrides = Partial<
-  Pick<
-    AudioQueryData,
-    | 'speedScale'
-    | 'pitchScale'
-    | 'intonationScale'
-    | 'volumeScale'
-    | 'prePhonemeLength'
-    | 'postPhonemeLength'
-    | 'outputSamplingRate'
-    | 'outputStereo'
-    | 'kana'
-  >
->;
-
 export class Client {
   readonly rest: RestAPI;
 
@@ -160,12 +148,16 @@ export class Client {
     options?: {
       core_version?: string;
       enable_interrogative_upspeak?: boolean;
-      query?: QueryOverrides;
+      query?: audioQueryOverrides;
     },
   ): Promise<ArrayBuffer> {
+    const overrides =
+      options?.query === undefined
+        ? undefined
+        : parseAudioQueryOverrides(options.query);
     const query = await this.createAudioQuery(text, speaker, options);
-    if (options?.query !== undefined) {
-      Object.assign(query, options.query);
+    if (overrides !== undefined) {
+      Object.assign(query, overrides);
     }
 
     return await query.synthesis(speaker, {
