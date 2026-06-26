@@ -20,12 +20,17 @@ export type {
   createAudioQueryFromPresetOptions as CreateAudioQueryFromPresetOptions,
   createAudioQueryOptions as CreateAudioQueryOptions,
 } from './types/audioquery';
+export {
+  parseAudioQuery,
+  parseAudioQueryOverrides,
+} from './types/audioquery';
 export type { Preset as PresetData } from './types/preset';
 export type {
   Speaker as SpeakerData,
   Styles as SpeakerStyle,
   SupportedFeatures as SpeakerSupportedFeatures,
 } from './types/speaker';
+export { parseSpeakers } from './types/speaker';
 export type { synthesisParams as SynthesisOptions } from './types/synthesis';
 export {
   parseVoicevoxProfile,

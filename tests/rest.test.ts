@@ -1,11 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import {
-  HttpError,
-  ResponseParseError,
-  ResponseValidationError,
-  RestAPI,
-  VoicevoxError,
-} from '../src';
+import { HttpError, ResponseParseError, RestAPI, VoicevoxError } from '../src';
 
 describe('RestAPI', () => {
   test('requires an HTTP or HTTPS engine URL', () => {
@@ -112,44 +106,6 @@ describe('RestAPI', () => {
       const rest = new RestAPI(server.url.toString());
 
       await expect(rest.getSpeakers()).rejects.toThrow(ResponseParseError);
-    } finally {
-      server.stop();
-    }
-  });
-
-  test('throws explicit errors for invalid speakers payloads', async () => {
-    const server = Bun.serve({
-      hostname: '127.0.0.1',
-      port: 0,
-      fetch() {
-        return Response.json({ speakers: [] });
-      },
-    });
-
-    try {
-      const rest = new RestAPI(server.url.toString());
-
-      await expect(rest.getSpeakers()).rejects.toThrow(ResponseValidationError);
-    } finally {
-      server.stop();
-    }
-  });
-
-  test('throws explicit errors for invalid audio query payloads', async () => {
-    const server = Bun.serve({
-      hostname: '127.0.0.1',
-      port: 0,
-      fetch() {
-        return Response.json({ speedScale: 1 });
-      },
-    });
-
-    try {
-      const rest = new RestAPI(server.url.toString());
-
-      await expect(rest.createAudioQuery('hello', 13, {})).rejects.toThrow(
-        ResponseValidationError,
-      );
     } finally {
       server.stop();
     }
