@@ -19,15 +19,24 @@ const testCasesSchema = z.object({
   version: z.number().int().positive(),
   description: z.string(),
   speakerId: z.number().int().nonnegative(),
-  profile: z.object({
-    baselineSpeedScale: z.number().positive(),
-    speedScales: z.array(z.number().positive()).min(1),
-    pitchScale: z.number().finite(),
-    intonationScale: z.number().finite(),
-    volumeScale: z.number().finite(),
-    prePhonemeLength: z.number().finite().nonnegative(),
-    postPhonemeLength: z.number().finite().nonnegative(),
-  }),
+  profile: z
+    .object({
+      baselineSpeedScale: z.number().positive(),
+      speedScales: z.array(z.number().positive()).min(1),
+      pitchScale: z.number().finite(),
+      intonationScale: z.number().finite(),
+      volumeScale: z.number().finite(),
+      prePhonemeLength: z.number().finite().nonnegative(),
+      postPhonemeLength: z.number().finite().nonnegative(),
+    })
+    .refine((p) => p.speedScales.includes(p.baselineSpeedScale), {
+      message: 'baselineSpeedScale must be present in speedScales',
+      path: ['baselineSpeedScale'],
+    })
+    .refine((p) => new Set(p.speedScales).size === p.speedScales.length, {
+      message: 'speedScales must not contain duplicate values',
+      path: ['speedScales'],
+    }),
   cases: z
     .array(
       z.object({
@@ -163,7 +172,12 @@ async function measureDuration(
   const client = new Client(baseUrl.toString());
   const [engineVersion, coreVersions, speakers] = await Promise.all([
     fetchJson<string>(baseUrl, '/version'),
-    fetchJson<string[]>(baseUrl, '/core_versions').catch(() => []),
+    fetchJson<string[]>(baseUrl, '/core_versions').catch((error: unknown) => {
+      if (error instanceof Error && error.message.includes(': 404')) {
+        return [];
+      }
+      throw error;
+    }),
     client.fetchSpeakers(),
   ]);
   const speaker = findSpeakerStyle(speakers, testCases.speakerId);

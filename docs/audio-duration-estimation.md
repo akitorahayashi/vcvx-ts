@@ -4,9 +4,9 @@
 
 This document describes how vcvx-ts estimates VOICEVOX speech duration before
 audio synthesis and how the estimate is recalibrated against a running
-VOICEVOX Engine.
+VOICEVOX Engine, targeting version 0.25.2 compatibility.
 
-The estimation boundary is VOICEVOX talk synthesis through `/audio_query`.
+The estimation boundary is VOICEVOX talk synthesis through `/audio_query` on VOICEVOX Engine 0.25.2.
 MP3 encoding, Remotion duration parsing, timeline assembly, and application
 block scheduling are outside vcvx-ts and remain owned by downstream projects.
 
