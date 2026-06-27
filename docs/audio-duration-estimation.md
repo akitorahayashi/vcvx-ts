@@ -2,157 +2,80 @@
 
 ## Scope
 
-This document describes how VOICEVOX `audio_query` output can be used to
-estimate speech duration before synthesizing WAV audio.
+This document describes how vcvx-ts estimates VOICEVOX speech duration before
+audio synthesis and how the estimate is recalibrated against a running
+VOICEVOX Engine, targeting version 0.25.2 compatibility.
 
-The current measurements target:
+The estimation boundary is VOICEVOX talk synthesis through `/audio_query` on VOICEVOX Engine 0.25.2.
+MP3 encoding, Remotion duration parsing, timeline assembly, and application
+block scheduling are outside vcvx-ts and remain owned by downstream projects.
 
-- VOICEVOX Engine 0.25.2
-- Talk synthesis through `/audio_query` and `/synthesis`
-- Speaker style ID 2 for the primary measurement set
-- `speedScale: 1.15`
-- `pitchScale: 0`
-- `intonationScale: 1`
-- `prePhonemeLength: 0`
-- `postPhonemeLength: 0`
-
-The findings apply directly to this profile. Speaker, style, speed, pause
-controls, boundary silence, output codec, and downstream duration parsers can
-change observed duration.
-
-## Query Duration
+## Estimation Model
 
 `/audio_query` returns accent phrases containing moras and optional pause moras.
-The query output is the best pre-synthesis source for speech timing because the
+This payload is the authoritative pre-synthesis timing source because the
 engine has already parsed text, punctuation, pronunciation, accent phrases, and
 speaker-specific timing.
 
-For one query, a useful estimate is:
+vcvx-ts exposes two estimation functions:
+
+- `estimateAudioQueryDuration(query)` calculates timing from an existing
+  `audio_query` payload.
+- `estimateSpeechDuration(engineUrl, text, profile)` calls `/audio_query`,
+  applies the supplied synthesis profile, and estimates duration without
+  calling `/synthesis`.
+
+For each query, vcvx-ts calculates:
 
 ```text
-(sum of consonant lengths + vowel lengths + pause-mora lengths) / speedScale
+scaled phoneme seconds = sum(mora consonant and vowel lengths) / speedScale
+scaled pause seconds = sum(pause-mora consonant and vowel lengths) / speedScale
+boundary seconds = prePhonemeLength + postPhonemeLength
+total seconds = scaled phoneme seconds + scaled pause seconds + boundary seconds
 ```
 
-Only non-null lengths are included. `prePhonemeLength` and `postPhonemeLength`
-are boundary silence controls and are handled separately from mora and
-pause-mora timing.
+`speedScale` must be positive. Nonpositive speed values are invalid for
+duration estimation.
 
-Synthesized WAV duration remains authoritative when exact timing is required.
-In measured 0.25.2 cases, the query calculation is close to WAV duration but
-can differ by roughly 10 to 15 milliseconds on short sentences due to synthesis
-and sample-grid behavior.
+## Measurement Workflow
 
-## Measured Results
+`scripts/measure-duration.ts` measures the estimation model against a running
+VOICEVOX Engine using `fixtures/duration-test-cases.json`.
 
-A VOICEVOX Engine 0.25.2 smoke check against synthesized WAV output produced:
+The measurement command runs both `/audio_query` and `/synthesis` for the same
+test cases:
 
-| Case | Query estimate | WAV duration | Difference |
-| --- | ---: | ---: | ---: |
-| `犬が走り、猫が止まります。` | 1.912 s | 1.899 s | -0.013 s |
-| `犬が走り` + `猫が止まります。` | 1.579 s | 1.568 s | -0.011 s |
-| `できるのでしょうか` | 0.920 s | 0.907 s | -0.013 s |
-| `できるのでしょうか。` | 0.920 s | 0.907 s | -0.013 s |
-| Project-like long sentence | 4.588 s | 4.587 s | -0.001 s |
+```sh
+bun run measure:duration
+```
 
-Across a production corpus that synthesized each narration block independently,
-93 blocks produced:
+The generated files are `.tmp/audio-duration-measurement.json` and
+`docs/audio-duration-measurement.md`. They record:
 
-| Measurement | Result |
-| --- | ---: |
-| VOICEVOX audio-query estimate | 109.877 s |
-| ffprobe MP3 total | 110.421 s |
-| Remotion MP3 total | 115.824 s |
-| Mean Remotion overhead per block | 58.1 ms |
-| Characters per ffprobe second | 7.66 |
-| Characters per rendered second | 7.30 |
-| Moras per ffprobe second | 9.23 |
-| Moras per rendered second | 8.80 |
+- Engine version and core versions
+- Speaker style and synthesis profile
+- Speed-scale matrix
+- Duration test case results
+- vcvx-ts estimate seconds
+- Synthesized WAV seconds
+- Estimate-to-WAV error
 
-The audio-query estimate differed from the ffprobe MP3 total by approximately
-0.49% for this corpus. Downstream encoded formats and media parsers can add
-per-file overhead that is outside VOICEVOX itself.
+The test cases include punctuation minimal pairs, segmentation cases, digits,
+counters, small kana, long vowels, and production-like narration text.
 
-## Punctuation
+## Version Changes
 
-Punctuation duration is contextual. It should not be modeled as a fixed number
-of seconds per punctuation character.
+VOICEVOX Engine upgrades are evaluated by rerunning `bun run measure:duration`
+against the upgraded engine. The regenerated report shows whether vcvx-ts
+duration estimates still match synthesized WAV duration.
 
-Preliminary paired measurements with all voice settings held constant showed:
+The query layer is the estimator used before synthesis. WAV sample duration is
+the authoritative VOICEVOX post-synthesis duration. Differences between query
+and WAV timing are calibration evidence, not handwritten constants.
 
-| Change | Observed duration change |
-| --- | ---: |
-| Add `、` inside a sentence | +0.437 s |
-| Add `。` between sentences | +0.320 s |
-| Change an internal `。` to `。。` | 0.000 s |
-| Add Japanese quotation marks around a phrase | +0.608 s |
-| Add Japanese parentheses around a phrase | +0.800 s |
-| Add ASCII parentheses around a phrase | +0.800 s |
-| Change `カ` to `カー` | +0.107 s |
-
-The following terminal forms all produced 0.906667 seconds in the measured
-profile:
-
-- `できるのでしょうか`
-- `できるのでしょうか。`
-- `できるのでしょうか。。`
-
-A terminal period therefore does not necessarily create a pause. An internal
-period can create a VOICEVOX pause mora, while the same character at the end of
-a block can have no duration effect.
-
-Repeated punctuation is not additive. `ー` is not a pause marker; it changes
-pronunciation and mora count.
-
-## Segmentation
-
-Block boundaries change timing independently of punctuation. For the sentence
-`犬が走り、猫が止まります。`:
-
-| Form | Duration |
-| --- | ---: |
-| One block with the internal comma | 1.899 s |
-| Two blocks split at the comma | 1.568 s |
-
-Splitting removed the internal comma pause in this example, making the speech
-0.331 seconds shorter before any encoded-file overhead is considered.
-
-Accurate estimates require the final block structure:
-
-- More independently encoded blocks can increase downstream codec and parser
-  overhead.
-- Moving punctuation to a block boundary can remove an in-text pause.
-- Different segmentation can cause VOICEVOX to produce different accent
-  phrases and phoneme lengths.
-
-## Estimation Strategy
-
-Character density is useful for early script budgeting, but it is not the
-authoritative timing calculation.
-
-| Stage | Estimator |
-| --- | --- |
-| Initial script drafting | Approximate non-punctuation characters per second |
-| Completed narration blocks | VOICEVOX audio-query phoneme and pause durations |
-| Pre-synthesis media estimate | Audio-query estimate plus measured per-block output overhead |
-| Exact synthesized audio | WAV sample duration |
-
-An application-level estimator should record:
-
-- Engine and core version
-- Speaker and style ID
-- Synthesis profile values
-- Source text
-- Final block count and block boundaries
-- Character and mora counts
-- Accent phrase count
-- Phoneme and pause-mora duration
-- WAV sample duration when synthesized
-- Encoded media duration when an output codec is involved
-
-The query model should predict WAV duration from speaker-specific phoneme and
-pause lengths, speed, effective boundary silence, and pause controls. Render or
-playback estimates should add application-specific codec and parser overhead
-outside the VOICEVOX client.
+Downstream media layers are measured separately by applications that own those
+layers. A project that encodes MP3 or parses media duration adds its own codec
+and parser correction after the vcvx-ts query estimate.
 
 ## Current Invariants
 

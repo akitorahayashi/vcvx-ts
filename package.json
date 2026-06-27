@@ -21,6 +21,7 @@
     "serve": "docker run --rm --init -p 127.0.0.1:50021:50021 --name vcvx-voicevox voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.2",
     "s": "bun run serve",
     "docs:api": "bun scripts/generate-api-reference.ts",
+    "measure:duration": "bun scripts/measure-duration.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "check": "biome check . && bun run typecheck",
