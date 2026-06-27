@@ -380,6 +380,9 @@ function parseWav(buffer: ArrayBuffer): WavInfo {
     }
 
     if (id === 'fmt ') {
+      if (size < 16) {
+        throw new Error('Invalid WAV: fmt chunk size must be at least 16 bytes');
+      }
       channelCount = view.getUint16(dataOffset + 2, true);
       sampleRate = view.getUint32(dataOffset + 4, true);
       blockAlign = view.getUint16(dataOffset + 12, true);

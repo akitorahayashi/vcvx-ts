@@ -39,7 +39,7 @@ export function estimateAudioQueryDuration(
     for (const mora of accentPhrase.moras) {
       rawPhonemeSeconds += moraSeconds(mora);
     }
-    if (accentPhrase.pause_mora !== null) {
+    if (accentPhrase.pause_mora != null) {
       pauseMoraCount += 1;
       rawPauseSeconds += moraSeconds(accentPhrase.pause_mora);
     }
