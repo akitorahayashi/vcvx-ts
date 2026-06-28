@@ -7,25 +7,27 @@ src/
   index.ts            Public export boundary
   client.ts           User-facing VOICEVOX client
   rest.ts             HTTP request and response boundary
+  rest.test.ts        Colocated unit tests
   audio_query.ts      Mutable audio query object with synthesis
   speaker.ts          Speaker response wrapper
   preset.ts           Preset response wrapper
   synthesis.ts        Profile-based WAV synthesis helper
   duration-estimate.ts
                       Audio query duration estimation
+  duration-estimate.test.ts
+                      Colocated unit tests
   voicevox-profile.ts VOICEVOX synthesis profile contract
+  voicevox-profile.test.ts
+                      Colocated unit tests
   errors.ts           Client and protocol errors
   types/
     *.ts              VOICEVOX payload types and endpoint response schemas
+    *.test.ts         Colocated unit tests
 tests/
-  client.test.ts            Tests for src/client.ts
-  rest.test.ts              Tests for src/rest.ts
-  synthesis.test.ts         Tests for src/synthesis.ts
-  duration-estimate.test.ts Tests for src/duration-estimate.ts
-  voicevox-profile.test.ts  Tests for src/voicevox-profile.ts
-  types/
-    audioquery.test.ts      Tests for src/types/audioquery.ts
-    speaker.test.ts         Tests for src/types/speaker.ts
+  client.test.ts            Integration tests for src/client.ts
+  rest.test.ts              Integration tests for src/rest.ts
+  synthesis.test.ts         Integration tests for src/synthesis.ts
+  duration-estimate.test.ts Integration tests for src/duration-estimate.ts
 scripts/
   generate-api-reference.ts Generate docs/api-reference.md from OpenAPI
   measure-duration.ts       Compare duration estimates with WAV durations
@@ -109,6 +111,8 @@ bun test         # Run all tests
 ## Development Guidelines
 
 - Tests assert public behavior through exports from `src/index.ts`.
+- Unit tests live next to source files under `src/` and test pure transformations.
+- Integration tests live under `tests/` and test filesystem, CLI, subprocess, or network behavior.
 - Test filenames correspond to implementation filenames so the owning test file
   is discoverable from the edited source file.
 - HTTP behavior is verified with local test servers rather than external engine

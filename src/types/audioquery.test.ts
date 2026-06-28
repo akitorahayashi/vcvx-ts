@@ -4,7 +4,7 @@ import {
   parseAudioQueryOverrides,
   RequestValidationError,
   ResponseValidationError,
-} from '../../src';
+} from '../index';
 
 describe('audioquery types', () => {
   test('parses a valid audio query response', () => {
