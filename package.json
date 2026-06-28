@@ -23,6 +23,8 @@
     "docs:api": "bun scripts/generate-api-reference.ts",
     "measure:duration": "bun scripts/measure-duration.ts",
     "test": "bun test",
+    "test:unit": "bun test src",
+    "test:integration": "bun test tests",
     "typecheck": "tsc --noEmit",
     "check": "biome check . && bun run typecheck",
     "fix": "biome check --write ."

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { parseVoicevoxProfile, RequestValidationError } from '../src';
+import { parseVoicevoxProfile, RequestValidationError } from './index';
 
 describe('parseVoicevoxProfile', () => {
   test('parses a valid voicevox profile', () => {

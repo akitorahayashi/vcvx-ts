@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { parseSpeakers, ResponseValidationError } from '../../src';
+import { parseSpeakers, ResponseValidationError } from '../index';
 
 describe('speaker types', () => {
   test('parses valid speakers', () => {

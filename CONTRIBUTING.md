@@ -4,10 +4,14 @@
 
 This repository owns:
 
-- `src/` — the VOICEVOX client, REST boundary, query model, profile contract,
-  wrappers, payload types, and runtime API validation
-- `tests/` — public client and HTTP behavior tests
+- `src/` — client, REST boundary, query model, profile contract, wrappers, payload types, runtime API validation, and colocated unit tests
+- `tests/` — integration tests
 - `.github/workflows/` — CI automation
+
+## Testing Policy
+
+- Unit tests live next to source files under `src/` and test pure transformations.
+- Integration tests live under `tests/` and test filesystem, CLI, subprocess, or network behavior.
 
 ## Workflow
 

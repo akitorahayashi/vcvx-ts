@@ -1,14 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { HttpError, ResponseParseError, RestAPI, VoicevoxError } from '../src';
+import { HttpError, ResponseParseError, RestAPI } from '../src';
 
-describe('RestAPI', () => {
-  test('requires an HTTP or HTTPS engine URL', () => {
-    expect(() => new RestAPI('')).toThrow(VoicevoxError);
-    expect(() => new RestAPI('file:///voicevox')).toThrow(
-      'VOICEVOX engine URL must use HTTP or HTTPS',
-    );
-  });
-
+describe('RestAPI integration', () => {
   test('parses application/json responses with charset parameters', async () => {
     const server = Bun.serve({
       hostname: '127.0.0.1',
@@ -29,44 +22,6 @@ describe('RestAPI', () => {
     } finally {
       server.stop();
     }
-  });
-
-  test('builds URLs from paths with or without a leading slash', async () => {
-    const urls: string[] = [];
-    const rest = new RestAPI('https://api.example.test', {
-      fetch: async (input) => {
-        urls.push(String(input));
-
-        return Response.json({ ok: true });
-      },
-    });
-
-    await expect(
-      rest.request<{ ok: boolean }>('GET', 'json', {
-        params: { speaker: 13 },
-      }),
-    ).resolves.toEqual({ ok: true });
-    await expect(
-      rest.request<{ ok: boolean }>('GET', '/json'),
-    ).resolves.toEqual({ ok: true });
-
-    expect(urls).toEqual([
-      'https://api.example.test/json?speaker=13',
-      'https://api.example.test/json',
-    ]);
-  });
-
-  test('wraps fetch failures in a voicevox error', async () => {
-    const rest = new RestAPI('https://api.example.test', {
-      fetch: async () => {
-        throw new TypeError('network down');
-      },
-    });
-
-    await expect(rest.getSpeakers()).rejects.toThrow(VoicevoxError);
-    await expect(rest.getSpeakers()).rejects.toThrow(
-      'VOICEVOX connection or network failure',
-    );
   });
 
   test('returns binary responses for synthesis', async () => {
