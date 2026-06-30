@@ -15,6 +15,7 @@ jobs:
     name: Run ${{ matrix.type }} Tests
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         type: [unit, integration]
 
